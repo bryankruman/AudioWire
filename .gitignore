@@ -1,0 +1,33 @@
+# Build output
+build/
+build*/
+out/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+
+# Visual Studio / WDK
+.vs/
+*.user
+*.suo
+x64/
+ARM64/
+Debug/
+Release/
+*.pdb
+*.cer
+*.pfx
+*.p12
+
+# Apple signing material
+*.mobileprovision
+*.p8
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Claude Code settings
+.claude/settings.local.json
