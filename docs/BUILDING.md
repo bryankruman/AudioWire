@@ -59,3 +59,7 @@ CMake copies dependency licences into `<build>/licenses`. Keep that directory, `
 ## Current validation and release evidence
 
 See [current results](VALIDATION_STATUS.md), [device and driver acceptance](DEVICE_VALIDATION.md), [release checklist](RELEASE_CHECKLIST.md), and [pairing review](security/PAIRING_REVIEW.md). Local workflow lint used checksum-verified actionlint 1.7.12 with the custom WDK label in `.github/actionlint.yaml`; actual hosted CI is a separate gate.
+
+## Current SDK compatibility
+
+`cmake/JuceCompatibility.cmake` applies narrow, checked-context patches to the pinned JUCE fork: Windows ARM64 detection and x86 feature/clock guards, plus an unused headless juceaide window-snapshot fallback for macOS 15+ SDKs. Windows ARM CPU clock metadata is reported as unknown. Xcode owns iOS bundle packaging; the CMake desktop install rule is skipped for iOS because JUCE 6 places an asset-catalog directory in the target RESOURCE property. Hosted build results and remaining physical gates are recorded in VALIDATION_STATUS.md.

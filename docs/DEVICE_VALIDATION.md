@@ -1,10 +1,10 @@
-﻿# AudioWire device and driver acceptance
+# AudioWire device and driver acceptance
 
 Status: **not executed on a physical iPhone or driver VM**. This runbook describes the evidence required to close the release gates; a checkbox or source inspection is not a result. Record the tested commit, binary SHA-256, platform/SDK/device versions, operator, result, and evidence path for each row. Do not retain live pairing codes, keys, audio from other people, or signing credentials.
 
 ## iPhone and Windows test environment
 
-Use a Mac with a current compatible Xcode installation and a provisioned iPhone, plus a Windows PC on the same network. The inventoried Mac mini was reachable on November 1, 2026 and reported macOS 12.7.6 with no active Xcode; it did not supply a usable build environment. No iPhone or dedicated driver VM has been designated for this workstream.
+Use a Mac with a current compatible Xcode installation and a provisioned iPhone, plus a Windows PC on the same network. The inventoried Mac mini was reachable on November 1, 2026 and reported macOS 12.7.6 with no active Xcode; it did not supply a usable build environment. The M1 MacBook Air is now selected for device development; its connection setup and the test iPhone/driver VM remain pending. Windows build tools can run locally; kernel runtime checks still use an isolated VM compatible with the host Windows edition.
 
 Build the unsigned simulator first using `scripts/build-ios.sh`. For the physical device use `scripts/build-ios.sh device <APPLE_DEVELOPMENT_TEAM_ID>` on the Mac. The team ID is not a signing private key. Provision locally using the organisation's protected Apple credentials; never copy credentials into the repository. A simulator can establish compilation and UI startup, but cannot establish the real audio gates below.
 
