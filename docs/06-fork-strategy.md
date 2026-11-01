@@ -1,5 +1,7 @@
 # 06 — Fork strategy: what to keep, cut and rewrite in SonoBus
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## Why fork at all (rather than start clean on AOO)
 
 SonoBus gives us, working today on both target platforms: JUCE audio device handling, the AOO

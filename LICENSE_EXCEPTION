@@ -8,3 +8,6 @@ through a channel without those restrictive terms and conditions.
 
 This additional permission mirrors the one granted by SonoBus (https://github.com/sonosaurus/sonobus),
 on which AudioWire is based.
+
+Scope: this permission applies to AudioWire-owned contributions. It does not grant additional
+rights to independently licensed dependencies; their respective permissions still apply.

@@ -1,5 +1,7 @@
 # 03 — iOS app
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## Starting point in SonoBus
 
 - `mobile/SonoBusMobile.jucer` is a Projucer project (JUCE 6 fork) that builds the App Store

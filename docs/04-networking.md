@@ -1,5 +1,7 @@
 # 04 — Networking: discovery, pairing, transport, security
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## What SonoBus does today (and what we remove)
 
 SonoBus users connect to a **connection server** (default `aoo.sonobus.net`, or a self-hosted

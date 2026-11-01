@@ -31,3 +31,9 @@ Thumbs.db
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Private keys and local credential configuration
+*.pem
+*.key
+.env
+.env.*

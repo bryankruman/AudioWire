@@ -1,5 +1,7 @@
 # 00 — Overview, goals and success criteria
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## The problem
 
 Bryan wants to use an iPhone as a wireless speaker + microphone for a Windows PC. Research on

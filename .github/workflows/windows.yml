@@ -1,0 +1,33 @@
+name: Windows app
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  app:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        arch: [x64, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build/app -G "Visual Studio 17 2022" -A ${{ matrix.arch }}
+      - name: Build
+        run: cmake --build build/app --config Release --parallel 4
+      - name: Test on x64 host
+        if: matrix.arch == 'x64'
+        run: ctest --test-dir build/app -C Release --output-on-failure
+      - name: Bundle app, helper and licence files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build/package | Out-Null
+          Copy-Item build/app/AudioWire_artefacts/Release/AudioWire.exe build/package
+          Copy-Item build/app/Release/AudioWireDriverSetup.exe build/package
+          Copy-Item build/app/licenses build/package -Recurse
+          Copy-Item LICENSE,LICENSE_EXCEPTION,THIRD_PARTY_NOTICES.md build/package
+      - name: Bundle exact corresponding sources
+        run: python scripts/bundle-source.py --vendor build/app/_deps --output build/package/AudioWire-source.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AudioWire-pre-alpha-${{ matrix.arch }}
+          path: build/package/

@@ -1,5 +1,7 @@
 # 02 — Windows virtual audio devices (the kernel driver)
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 This is the hardest and riskiest part of the project. Nothing in SonoBus helps here; it is new
 work. Read `08-risks-and-decisions.md` R1 and R2 alongside this.
 

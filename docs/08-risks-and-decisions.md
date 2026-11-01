@@ -1,5 +1,7 @@
 # 08 — Risk register and open decisions
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## Risks
 
 | ID | Risk | Likelihood | Impact | Mitigation / trigger |

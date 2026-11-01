@@ -1,0 +1,24 @@
+name: iOS simulator
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  simulator:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: >
+          cmake -S . -B build/ios -G Xcode
+          -DCMAKE_SYSTEM_NAME=iOS
+          -DCMAKE_OSX_SYSROOT=iphonesimulator
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DAUDIOWIRE_BUILD_TESTS=OFF
+          -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+      - name: Build simulator
+        run: cmake --build build/ios --config Release --target AudioWire -- -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AudioWire-iOS-simulator
+          path: build/ios/AudioWire_artefacts/Release/*.app

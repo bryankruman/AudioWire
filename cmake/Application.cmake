@@ -1,0 +1,87 @@
+aw_dependency(JUCE essej/JUCE 9bf1237797e600378dd6f969bd443ab1bf3f704f)
+set(JUCE_BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
+set(JUCE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# JUCE 6 relied on a transitive <utility> include removed in recent standard libraries.
+file(READ "${JUCE_SOURCE_DIR}/modules/juce_core/system/juce_StandardHeader.h" aw_standard_header)
+if(NOT aw_standard_header MATCHES "#include <utility>")
+    file(APPEND "${JUCE_SOURCE_DIR}/modules/juce_core/system/juce_StandardHeader.h" "\n#include <utility>\n")
+endif()
+# The SonoBus fork calls this helper from GUI code on MinGW, but only defined it on MSVC.
+if(MINGW)
+    set(aw_stats_path "${JUCE_SOURCE_DIR}/modules/juce_core/native/juce_win32_SystemStats.cpp")
+    file(READ "${aw_stats_path}" aw_stats)
+    set(aw_stats_before "${aw_stats}")
+    string(REPLACE "#else\n RTL_OSVERSIONINFOW getWindowsVersionInfo()" "#endif\n RTL_OSVERSIONINFOW getWindowsVersionInfo()" aw_stats "${aw_stats}")
+    string(REPLACE " }\n#endif\n\nSystemStats::OperatingSystemType" " }\n\nSystemStats::OperatingSystemType" aw_stats "${aw_stats}")
+    if(NOT aw_stats STREQUAL aw_stats_before)
+        file(WRITE "${aw_stats_path}" "${aw_stats}")
+    endif()
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set(aw_ios_window "${JUCE_SOURCE_DIR}/modules/juce_gui_basics/native/juce_ios_Windowing.mm")
+    file(READ "${aw_ios_window}" aw_ios_source)
+    if(NOT aw_ios_source MATCHES "AudioWire pairing URL")
+        string(REPLACE "    // mostly stolen from didPickDocumentAtURL"
+            "    // AudioWire pairing URL is a command, not a security-scoped file.\n    if ([[url absoluteString] hasPrefix:@\"audiowire://\"])\n    {\n        if (auto* app = JUCEApplicationBase::getInstance())\n            app->anotherInstanceStarted (nsStringToJuce ([url absoluteString]));\n        return YES;\n    }\n    // mostly stolen from didPickDocumentAtURL"
+            aw_ios_source "${aw_ios_source}")
+        file(WRITE "${aw_ios_window}" "${aw_ios_source}")
+    endif()
+endif()
+add_subdirectory(${JUCE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/deps/JUCE EXCLUDE_FROM_ALL)
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set(aw_plist "<plist version=\"1.0\"><dict><key>NSLocalNetworkUsageDescription</key><string>AudioWire finds your PC on this Wi-Fi.</string><key>NSBonjourServices</key><array><string>_audiowire._udp</string></array><key>UIBackgroundModes</key><array><string>audio</string></array><key>CFBundleURLTypes</key><array><dict><key>CFBundleURLSchemes</key><array><string>audiowire</string></array></dict></array></dict></plist>")
+endif()
+juce_add_gui_app(AudioWire COMPANY_NAME "AudioWire contributors"
+    ICON_BIG ../app/assets/AudioWire.svg
+    BUNDLE_ID ai.rlab.audiowire PRODUCT_NAME AudioWire VERSION ${PROJECT_VERSION}
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "AudioWire sends your microphone to your paired PC."
+    PLIST_TO_MERGE "${aw_plist}")
+aw_dependency(qrcodegen nayuki/QR-Code-generator 3c6d0b3cefb4e049dc337e82237c9644399716a8)
+add_library(aw_qr STATIC ${qrcodegen_SOURCE_DIR}/cpp/qrcodegen.cpp)
+target_include_directories(aw_qr PUBLIC ${qrcodegen_SOURCE_DIR}/cpp)
+target_sources(AudioWire PRIVATE app/Main.cpp app/Runtime.cpp app/Settings.cpp app/MainView.cpp)
+target_link_libraries(AudioWire PRIVATE audiowire_core aw_qr juce::juce_gui_extra juce::juce_audio_devices)
+target_compile_definitions(AudioWire PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_DISPLAY_SPLASH_SCREEN=0
+    JUCE_REPORT_APP_USAGE=0 JUCE_MODAL_LOOPS_PERMITTED=1 AUDIOWIRE_VERSION="${PROJECT_VERSION}")
+if(WIN32)
+    aw_dependency(mdns mjansson/mdns a569c4759bd47e0f2a7bfc4d4c19620445782806)
+    target_sources(AudioWire PRIVATE platform/windows/WinAudioBridge.cpp platform/windows/MdnsWindows.cpp
+        platform/windows/DpapiKeyStore.cpp platform/windows/WindowsIntegration.cpp)
+    target_include_directories(AudioWire PRIVATE ${mdns_SOURCE_DIR})
+    target_compile_definitions(AudioWire PRIVATE _WIN32_WINNT=0x0A00 WINVER=0x0A00 NOMINMAX)
+    target_link_libraries(AudioWire PRIVATE crypt32 ole32 uuid avrt setupapi iphlpapi)
+    if(MINGW)
+        target_link_options(AudioWire PRIVATE -static -static-libgcc -static-libstdc++)
+    endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    enable_language(OBJCXX)
+    target_sources(AudioWire PRIVATE platform/ios/VoiceProcessingAudioIODevice.mm
+        platform/ios/NwBrowserDiscovery.mm platform/ios/KeychainKeyStore.mm)
+    set_source_files_properties(platform/ios/VoiceProcessingAudioIODevice.mm
+        platform/ios/NwBrowserDiscovery.mm platform/ios/KeychainKeyStore.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_link_libraries(AudioWire PRIVATE "-framework AVFoundation" "-framework AudioToolbox"
+        "-framework Network" "-framework Security" "-framework UIKit")
+    set_target_properties(AudioWire PROPERTIES XCODE_GENERATE_SCHEME ON
+        XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY 1 XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 15.0)
+else()
+    message(FATAL_ERROR "The native app supports Windows and iOS. Use AUDIOWIRE_BUILD_APP=OFF for portable core tests.")
+endif()
+if(AUDIOWIRE_BUILD_TESTS AND WIN32)
+    add_test(NAME app_network COMMAND AudioWire --network-test)
+endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Licenses.cmake)
+install(TARGETS AudioWire RUNTIME DESTINATION . BUNDLE DESTINATION . RESOURCE DESTINATION resources)
+
+if(WIN32)
+    add_executable(AudioWireDriverFeed tests/DriverFeedTool.cpp)
+    target_include_directories(AudioWireDriverFeed PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    if(MINGW)
+        target_link_options(AudioWireDriverFeed PRIVATE -static)
+    endif()
+    add_executable(AudioWireDriverSetup installer/DriverSetup.cpp)
+    target_link_libraries(AudioWireDriverSetup PRIVATE setupapi newdev shell32 advapi32)
+    if(MINGW)
+        target_link_options(AudioWireDriverSetup PRIVATE -municode -static)
+    endif()
+endif()

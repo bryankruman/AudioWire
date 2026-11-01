@@ -1,5 +1,7 @@
 # 07 — Roadmap and milestones
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 Effort figures assume one developer working mostly full-time with AI assistance, with C++/JUCE
 comfort and **no** prior Windows kernel experience. Calendar time for certificates and store review
 is listed separately because it runs in parallel and cannot be compressed.

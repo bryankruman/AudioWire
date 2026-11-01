@@ -1,0 +1,25 @@
+name: WDK driver validation
+# A WDK-equipped runner and isolated test VM must be provisioned first.
+# Building the app on GitHub-hosted runners does not validate a kernel driver.
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        options: [x64, ARM64]
+        default: x64
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, WDK]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build unsigned candidate (never install on runner)
+        shell: pwsh
+        run: ./scripts/build-driver.ps1 -Architecture ${{ inputs.architecture }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AudioWire-unsigned-driver-${{ inputs.architecture }}
+          path: build/driver/${{ inputs.architecture }}/Release/

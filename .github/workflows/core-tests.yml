@@ -1,0 +1,18 @@
+name: Core tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  core:
+    strategy:
+      matrix:
+        os: [windows-2022, ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure portable core
+        run: cmake -S . -B build/core -DAUDIOWIRE_BUILD_APP=OFF -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build/core --config Release --parallel 4
+      - name: Test
+        run: ctest --test-dir build/core -C Release --output-on-failure

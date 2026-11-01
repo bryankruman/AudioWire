@@ -1,5 +1,7 @@
 # 01 — Architecture
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 ## One-paragraph version
 
 Two apps share one C++ core. The **Windows app** is a tray application that installs a small

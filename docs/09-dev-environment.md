@@ -1,5 +1,7 @@
 # 09 — Development environment, accounts and certificates
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 Everything that must exist before or during Phase 0. Versions are targets to pin in CI once the
 first build succeeds; adjust the table when verified.
 

@@ -1,5 +1,7 @@
 # 05 — UX specification
 
+> Original product plan. See [implementation status](IMPLEMENTATION.md) for verified behavior, deviations and open release gates.
+
 Design principle: **the default path has no decisions in it.** Every setting that SonoBus puts on
 the main screen (codec, bitrate, buffer, per-peer gain, group/server) either becomes automatic or
 moves behind "Advanced". Target: a non-technical user completes setup without reading anything but
