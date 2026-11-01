@@ -1,6 +1,6 @@
-﻿# AudioWire validation status — November 1, 2026
+# AudioWire validation status — November 1, 2026
 
-Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 validation passes. Actual hosted CI, iPhone acceptance, supported driver builds/runtime, ARM64 and signed distribution remain open.
+Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 and local Ubuntu WSL portable-core validation pass. Actual hosted CI, iPhone acceptance, supported driver builds/runtime, ARM64 and signed distribution remain open.
 
 ## Revisions and evidence scope
 
@@ -16,6 +16,8 @@ Evidence is under ignored `build/validation/` in the task worktree. Logs are loc
 | Fresh dependency configuration | Clean MSVC x64 tree downloaded pinned dependencies with TLS verification enabled. Initial sandbox attempt failed in Windows TLS setup; scoped unsandboxed retry succeeded. | `msvc-x64-configure.log`, `msvc-x64-configure-retry.log` |
 | Native Windows app | Visual Studio 2022 MSVC 19.42 / SDK 10.0.26100.0 / CMake 4.4, Release x64: app, helper, feed tool and tests built. | `msvc-final-build.log` |
 | Automated suites | **4/4 passed**: core, protocol_vectors, app_network, driver_abi. Includes encrypted bidirectional localhost Opus, wrong/abandoned/stale/expired pairing, stored-key reconnect, mute and 65,536 sample conversions. | `msvc-final-tests.log` |
+| Source-archive rebuild, Windows | Extracted the verified archive into a new tree; configured with bundled dependencies, built with native MSVC, and passed **3/3** core/vector/driver-interface suites. No dependency download was needed. | `offline-core-configure.log`, `offline-core-build.log`, `offline-core-tests.log` |
+| Source-archive rebuild, Linux | Existing Ubuntu 24.04 WSL with GNU 13.3.0/CMake/Ninja built the same extracted portable source and passed **2/2** core/vector suites. This is local Linux evidence, not hosted CI or a Linux application. | `linux-configure.log`, `linux-core-build.log`, `linux-core-tests.log` |
 | Candidate protocol vectors | **50 fields passed**, covering two public synthetic exchanges, direct equations, confirmations, resume proofs, directional/control keys and packet envelopes. This is not an independent cryptographic review. | `tests/vectors/pairing-v1.txt`; `protocol_vectors` executable |
 | Windows audio smoke | Existing WASAPI loopback opened; 10 ms callbacks ran; microphone injection disabled. | `msvc-audio.stdout.log`, `msvc-audio.stderr.log` |
 | Workflow static analysis | actionlint **1.7.12 passed** on all four workflows after declaring the custom WDK label. Release archive checksum was verified before running the tool. Shellcheck and pyflakes were disabled for this lint invocation; this is not workflow execution. | `actionlint.log`; `.github/actionlint.yaml` |
@@ -61,3 +63,7 @@ error MSB8020: The build tools for WindowsKernelModeDriver10.0
 Compiler success, localhost tests and unsigned catalog generation do not establish kernel safety or a working physical speakerphone. No driver was installed, no host boot policy/firewall/default audio device was changed, and no public source or store submission was published by these checks.
 
 The remaining execution procedures and release evidence requirements are in [device validation](DEVICE_VALIDATION.md), [pairing review](security/PAIRING_REVIEW.md) and [release checklist](RELEASE_CHECKLIST.md).
+
+## Public CI publication checkpoint
+
+The reviewed commits and all local artifacts remain preserved. A public GitHub push was stopped by automatic approval review before execution because explicit public-disclosure approval was required. No push or hosted CI run occurred. Independent Windows/Linux archive validation continued successfully while that approval remained pending. The archive identified in `artifacts.json` corresponds to source/documentation revision `5439589`; these additional documentation results do not change the tested application source revision `fcc8ec6`.
