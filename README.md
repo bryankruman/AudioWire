@@ -2,7 +2,7 @@
 
 AudioWire turns an iPhone into a wireless speaker and microphone for a Windows PC on the same Wi-Fi network. The project uses the SonoBus JUCE 6 and AOO forks, Opus, and an encrypted one-to-one connection.
 
-**Status: implemented pre-alpha, not a released v1.** The Windows app builds and its automated core and network tests run locally. iOS and kernel-driver source, build definitions, installer, and CI workflows are included. The iOS app and driver still need their platform builds and physical-device validation. There is no App Store release or Microsoft-signed driver in this repository.
+**Status: implemented pre-alpha, not a released v1.** The Windows app builds and its automated core and network tests run locally. iOS and kernel-driver source, build definitions, installer, and CI workflows are included. Hosted CI builds the Windows x64/ARM64 apps and iOS simulator. Signed physical-iPhone builds and kernel-driver build/runtime validation remain open. There is no App Store release or Microsoft-signed driver in this repository.
 
 ## Use the Windows development build
 

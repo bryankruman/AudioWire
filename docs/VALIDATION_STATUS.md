@@ -1,23 +1,24 @@
 # AudioWire validation status — November 1, 2026
 
-Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 and local Ubuntu WSL portable-core validation pass. Hosted Windows x64/ARM64 builds and three-platform core CI now pass; iOS simulator validation is still in progress. iPhone acceptance, supported driver builds/runtime, ARM64 hardware acceptance and signed distribution remain open.
+Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 and local Ubuntu WSL portable-core validation pass. Hosted Windows x64/ARM64 builds, the iOS simulator build, and three-platform core CI now pass. iPhone acceptance, supported driver builds/runtime, ARM64 hardware acceptance and signed distribution remain open.
 
 ## Hosted CI after branch publication
 
-The reviewed task branch is now public. Core tests passed on Windows, Ubuntu and macOS, and the Windows app built and packaged successfully for both x64 and ARM64 at source revision `95bea92`. The x64 app tests ran; cross-compilation does not establish ARM64 hardware behavior.
+**All six hosted jobs passed at source revision `a38b556`.** The reviewed branch and fixes are public. The Windows x64 tests ran; Windows ARM64 and iOS simulator compilation do not establish physical hardware behavior.
 
 | Check | Actual hosted evidence |
 |---|---|
-| Three-platform portable core | [Successful run 41350553887](https://github.com/bryankruman/AudioWire/actions/runs/41350553887): Windows 2022, Ubuntu 24.04 and macOS 15 all passed. |
-| Windows x64 and ARM64 app | [Successful run 41350553912](https://github.com/bryankruman/AudioWire/actions/runs/41350553912): build, x64 tests, corresponding-source/licence bundling and artifact upload passed. |
-| Latest iOS simulator candidate | [Run 41351298118](https://github.com/bryankruman/AudioWire/actions/runs/41351298118), source `a38b556`: queued when this record was updated; no simulator/device pass claimed. |
-| Latest Windows/core reruns | [Windows run 41351298096](https://github.com/bryankruman/AudioWire/actions/runs/41351298096) and [core run 41351298121](https://github.com/bryankruman/AudioWire/actions/runs/41351298121) track the iOS packaging follow-up revision. |
+| Three-platform portable core | [Successful run 41351298121](https://github.com/bryankruman/AudioWire/actions/runs/41351298121): Windows 2022, Ubuntu 24.04 and macOS 15 all passed. |
+| Windows x64 and ARM64 app | [Successful run 41351298096](https://github.com/bryankruman/AudioWire/actions/runs/41351298096): build, x64 tests, corresponding-source/licence bundling and artifact upload passed for both architectures. |
+| iOS simulator | [Successful run 41351298118](https://github.com/bryankruman/AudioWire/actions/runs/41351298118): configuration, simulator build and artifact upload passed. Downloaded bundle inspection confirmed ARM64 Mach-O with the iOS Simulator platform marker, bundle ID `ai.rlab.audiowire`, and minimum iOS 15.0. No physical iPhone execution was claimed. |
 
-The first macOS jobs were cancelled by GitHub's scheduled macOS 14 image brownout. Moving to macOS 15 resolved that runner issue. The actual platform builds then exposed old-JUCE assumptions: Windows ARM64 was classified as Intel and attempted x86 intrinsics; the macOS juceaide build helper used a removed window-snapshot API; and JUCE's iOS asset-catalog directory conflicted with CMake's target installation rule. Narrow compatibility patches fixed the Windows ARM64 build and host helper. The latest candidate leaves iOS bundle packaging/installation to Xcode. That final iOS candidate still requires a successful hosted result.
+The first macOS jobs were cancelled by GitHub's scheduled macOS 14 image brownout. Moving to macOS 15 resolved that runner issue. The actual platform builds then exposed old-JUCE assumptions: Windows ARM64 was classified as Intel and attempted x86 intrinsics; the macOS juceaide build helper used a removed window-snapshot API; and JUCE's iOS asset-catalog directory conflicted with CMake's target installation rule. Narrow compatibility patches fixed the ARM64 build and host helper. Xcode now owns iOS bundle packaging/installation instead of the CMake desktop install rule. All target jobs subsequently passed.
 
 The pinned Windows ARM64 port reports unavailable CPU clock metadata as unknown and disables x86 capability probing on ARM. The macOS snapshot fallback is used only by the headless host build helper; AudioWire does not ship a macOS GUI application. Audio transport and pairing protocol code were not changed by these compatibility fixes.
 
 The M1 MacBook Air has been selected for physical iOS development. Connection setup and protected local Apple provisioning are pending; the inventoried 2014 Mac mini was freshly checked as macOS 12.7.6 with no Xcode. A local Windows SDK/WDK installation plan and Microsoft-signed installers are staged for review. No developer-tool installation, SSH access change, host driver load or VM provisioning has occurred yet.
+
+Latest hosted artifact digests and the simulator inspection are retained under ignored `build/validation/hosted-ci-evidence.json` and `hosted-ios-artifact.json`. Earlier local package/archive hashes below identify historical development artifacts, not replacements for the latest hosted binaries.
 
 ## Revisions and evidence scope
 
@@ -43,7 +44,7 @@ Evidence is under ignored `build/validation/` in the task worktree. Logs are loc
 | Initial GitHub inspection | Before publication the public repository had no workflow runs and **0** registered self-hosted runners. Hosted CI results now appear above; no WDK runner was provisioned. | Current-session `gh repo view`, `gh run list`, `gh api .../actions/runners` |
 | Mac inspection | The documented Mac mini responded over its pinned LAN SSH identity: macOS **12.7.6**, no selected Xcode/developer directory. No Xcode or SDK was installed by this workstream. | Read-only SSH `hostname`, `sw_vers`, `xcode-select -p`, `xcodebuild -version` |
 
-Inspected final artifacts are **unsigned**. The app SHA-256 is `7D683D5DE10775E981EFEDF9318DF1CE9DDF68ADA3ED18C8F69134EF6D61F174`. The development installer SHA-256 is `FB2689031FD629252C3844BC0359DDE76EFB1F17CECEFF246F4D45FA03718EDB`. `build/validation/artifacts.json` records final package/source hashes when bundled. These hashes identify development artifacts, not an approved release.
+The initial local development artifacts described below were **unsigned**; the latest CI builds also disable signing. The app SHA-256 is `7D683D5DE10775E981EFEDF9318DF1CE9DDF68ADA3ED18C8F69134EF6D61F174`. The development installer SHA-256 is `FB2689031FD629252C3844BC0359DDE76EFB1F17CECEFF246F4D45FA03718EDB`. `build/validation/artifacts.json` records final package/source hashes when bundled. These hashes identify development artifacts, not an approved release.
 
 ## Failures reproduced and fixed
 
@@ -65,7 +66,7 @@ An exchange now records its originating code-window generation. A changed or exp
 | Windows ARM64 app/core | Hosted app/core cross-compilation now passes. Local target tools are still absent, and no ARM64 hardware runtime check ran. | Install the reviewed local target tools if needed; execute runtime checks on ARM64 hardware. |
 | Supported x64 and ARM64 driver builds | Both MSBuild attempts failed before compilation with **MSB8020**, missing `WindowsKernelModeDriver10.0`. | Matching supported Visual Studio/SDK/WDK integration and libraries, followed by successful builds. |
 | Driver VM and 24-hour Verifier | No dedicated, snapshotted driver-test VM designated; no self-hosted WDK runner registered. | Identify/provision the VM and supported build host; execute and retain all driver acceptance evidence. |
-| Hosted iOS CI | Three-platform core and Windows x64/ARM64 app builds pass; latest iOS candidate is queued. | Inspect the iOS result, resolve any remaining platform failures and retain all artifact/source hashes. |
+| Hosted CI | All six jobs pass at `a38b556`; simulator artifact inspection also passes. | Rerun for a future release source revision; physical-device, kernel and signed-distribution gates remain separate. |
 | Physical audio and UX | No PC/iPhone call, echo/one-way acoustic latency/Wi-Fi recovery, screen reader or large-text result. | Complete DEVICE_VALIDATION.md on actual target hardware. |
 | Independent security review | Review packet and public fixtures prepared; no external reviewer engaged or approval obtained. | Reviewer independently reproduces vectors, resolves findings and signs off on the exact release revision. |
 | Distribution | No Microsoft-approved driver signatures, signed installer lifecycle proof, App Store approval or resolved JUCE/App Store disposition. | Complete RELEASE_CHECKLIST.md and STORE_RELEASE.md. |
