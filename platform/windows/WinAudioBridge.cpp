@@ -7,6 +7,7 @@
 #include <audioclient.h>
 #include <avrt.h>
 #include <cmath>
+#include <propkeydef.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <iostream>
 #include <juce_audio_basics/juce_audio_basics.h>

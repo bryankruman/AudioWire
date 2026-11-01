@@ -16,6 +16,8 @@ function(aw_dependency name repo revision)
     endif()
 endfunction()
 aw_dependency(opus xiph/opus ddbe48383984d56acd9e1ab6a090c54ca6b735a6)
+# Match the application static MSVC runtime; Opus otherwise overrides it with /MD.
+set(OPUS_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
 set(OPUS_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
 set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)

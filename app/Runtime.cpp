@@ -154,6 +154,7 @@ void Runtime::pairNew() {
         return;
     // The code is displayed only in the local pairing UI, never included in logs or advertisements.
     code_ = juce::String(static_cast<int>(randombytes_uniform(1000000))).paddedLeft('0', 6).toStdString();
+    ++pairingGeneration_;
     gate_.open(PairingGate::Clock::now());
     codeExpires_ = PairingGate::Clock::now() + std::chrono::minutes(2);
     snapshot_.error.clear();
@@ -397,6 +398,7 @@ void Runtime::serverHandshake(std::unique_ptr<juce::StreamingSocket> socket) {
     Key pairKey{};
     WipeKey wipe{pairKey};
     std::string code;
+    uint64_t pairingGeneration = 0;
     if (pairing) {
         std::lock_guard<std::mutex> l(mutex_);
         if (!gate_.available(PairingGate::Clock::now())) {
@@ -404,6 +406,7 @@ void Runtime::serverHandshake(std::unique_ptr<juce::StreamingSocket> socket) {
             return;
         }
         code = code_;
+        pairingGeneration = pairingGeneration_;
         gate_.failure();
     } else {
         auto stored = keys_->get(id);
@@ -443,8 +446,9 @@ void Runtime::serverHandshake(std::unique_ptr<juce::StreamingSocket> socket) {
     }
     if (pairing) {
         std::lock_guard<std::mutex> l(mutex_);
-        if (PairingGate::Clock::now() >= codeExpires_)
-            throw std::runtime_error("Pairing code expired. Generate a new one.");
+        // Commit authentication only for the same local code window that began the exchange.
+        if (pairingGeneration != pairingGeneration_ || PairingGate::Clock::now() >= codeExpires_)
+            throw std::runtime_error("Pairing code expired or changed. Generate a new one.");
     }
     if (pairing)
         keys_->put(id, pairKey);
@@ -878,6 +882,41 @@ int runNetworkTest() {
         }
         require(pc.pairingCode().empty() && pc.settings().paired.empty(),
                 "pairing gate exhaustion or unconfirmed key persistence");
+        // A previously correct in-flight proof must not survive code replacement or expiry.
+        auto rejectStaleExchange = [&](bool replaceCode) {
+            pc.pairNew();
+            const auto id = randomId();
+            Pairing exchange(Role::phone, pc.pairingCode(), settings.id, id);
+            juce::StreamingSocket pending;
+            require(pending.connect("127.0.0.1", pc.tcpPort(), 1000), "stale test connect");
+            frame(pending, object({{"v", 1}, {"type", "pair"}, {"id", str(id)},
+                                   {"name", "Stale exchange test"}, {"udp", phone.udpPort()},
+                                   {"nonce", str(hex(randomKey()))}}));
+            require(!read(pending).hasProperty("error"), "stale test hello");
+            frame(pending, object({{"message", str(hex(exchange.message()))}}));
+            const auto response = read(pending);
+            const auto key = exchange.finish(unhex(string(response, "message")));
+            require(exchange.verifyConfirmation(key, unhex(string(response, "proof")), Role::pc),
+                    "stale test PC proof");
+            if (replaceCode)
+                pc.pairNew();
+            else {
+                std::lock_guard<std::mutex> lock(pc.mutex_);
+                pc.codeExpires_ = PairingGate::Clock::now();
+            }
+            frame(pending, object({{"proof", str(hex(exchange.confirmation(key, Role::phone)))}}));
+            bool rejected = false;
+            try {
+                rejected = read(pending).hasProperty("error");
+            } catch (const std::exception&) {
+                rejected = true; // An invalidated exchange may be closed without an error frame.
+            }
+            require(rejected && pc.settings().paired.empty() && pc.snapshot().state != State::connected,
+                    replaceCode ? "replaced code accepted an in-flight proof"
+                                : "expired code accepted an in-flight proof");
+        };
+        rejectStaleExchange(true);
+        rejectStaleExchange(false);
         pc.pairNew();
         const auto correctCode = pc.pairingCode();
         auto wrongCode = correctCode == "000000" ? "000001" : "000000";
@@ -982,7 +1021,7 @@ int runNetworkTest() {
         phone.forget(settings.id);
         require(waitFor([&] { return pc.settings().paired.empty() && phone.settings().paired.empty(); }),
                 "forget failed");
-        std::cout << "PASS: aborted PAKE attempt limit, wrong code, single phone, mutual pairing, encrypted "
+        std::cout << "PASS: aborted PAKE attempt limit, wrong code, replaced/expired in-flight codes, single phone, mutual pairing, encrypted "
                      "controls and bidirectional UDP Opus, live mute/unmute, spoof rejection, disconnect, "
                      "stored-key and automatic reconnect, forget\n";
         return 0;

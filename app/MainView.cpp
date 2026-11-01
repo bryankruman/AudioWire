@@ -144,11 +144,12 @@ MainView::MainView(Runtime& runtime, AudioPlatform* audio, bool phone)
     action_.onClick = [this] {
         auto s = runtime_.snapshot();
         if (phone_ && s.state == State::connected) {
+            const auto safe = juce::Component::SafePointer<MainView>(this);
             juce::AlertWindow::showOkCancelBox(
                 juce::AlertWindow::QuestionIcon, "Disconnect AudioWire?",
                 "PC sound and your microphone will stop streaming.", "Disconnect", "Keep connected", nullptr,
                 juce::ModalCallbackFunction::create(
-                    [safe = juce::Component::SafePointer<MainView>(this)](int result) {
+                    [safe](int result) {
                         if (result && safe)
                             safe->runtime_.disconnect();
                     }));
@@ -212,7 +213,8 @@ MainView::MainView(Runtime& runtime, AudioPlatform* audio, bool phone)
         int i = paired_.getSelectedId() - 1;
         if (i >= 0 && i < static_cast<int>(s.paired.size())) {
             runtime_.forget(s.paired[static_cast<size_t>(i)].id);
-            juce::Timer::callAfterDelay(150, [safe = juce::Component::SafePointer<MainView>(this)] {
+            const auto safe = juce::Component::SafePointer<MainView>(this);
+            juce::Timer::callAfterDelay(150, [safe] {
                 if (safe)
                     safe->refreshPaired();
             });

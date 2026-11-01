@@ -6,7 +6,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDERS = ("app", "cmake", "core", "platform", "driver", "installer", "scripts", "tests", "docs", ".github")
-FILES = ("CMakeLists.txt", ".clang-format", ".gitignore", "README.md", "CONTRIBUTING.md",
+FILES = ("CMakeLists.txt", ".clang-format", ".gitattributes", ".gitignore", "README.md", "CONTRIBUTING.md",
          "LICENSE", "LICENSE_EXCEPTION", "THIRD_PARTY_NOTICES.md")
 DEPENDENCIES = ("JUCE", "aoo", "opus", "libsodium", "mdns", "qrcodegen")
 SENSITIVE_SUFFIXES = {".pfx", ".p12", ".p8", ".pem", ".key", ".mobileprovision"}

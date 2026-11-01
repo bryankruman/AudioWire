@@ -3,7 +3,7 @@ $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 $build=Join-Path $root "build\$Architecture"
 $args=@('-S',$root,'-B',$build,'-G','Visual Studio 17 2022','-A',$Architecture)
-if($CoreOnly){$args+='-DAUDIOWIRE_BUILD_APP=OFF'}
+if($CoreOnly){$args+='-DAUDIOWIRE_BUILD_APP=OFF'}else{$args+='-DAUDIOWIRE_BUILD_APP=ON'}
 & cmake @args
 if($LASTEXITCODE){throw 'CMake configure failed'}
 & cmake --build $build --config Release --parallel

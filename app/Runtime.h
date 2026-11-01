@@ -79,6 +79,7 @@ class Runtime : private juce::Thread {
     Session session_;
     PairingGate gate_;
     std::string code_;
+    uint64_t pairingGeneration_ = 0;
     PairingGate::Clock::time_point codeExpires_{};
     std::unique_ptr<KeyStore> keys_;
     std::unique_ptr<Discovery> discovery_;
