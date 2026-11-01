@@ -72,8 +72,11 @@ if(AUDIOWIRE_BUILD_TESTS AND WIN32)
     add_test(NAME app_network COMMAND AudioWire --network-test)
 endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Licenses.cmake)
-# Xcode compiles asset catalogs into the app bundle; CMake RESOURCE installation rejects directories.
-install(TARGETS AudioWire RUNTIME DESTINATION . BUNDLE DESTINATION .)
+# JUCE 6 puts an asset-catalog directory in RESOURCE; CMake validates it even
+# without a RESOURCE destination. Xcode handles iOS packaging and installation.
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    install(TARGETS AudioWire RUNTIME DESTINATION . BUNDLE DESTINATION .)
+endif()
 
 if(WIN32)
     add_executable(AudioWireDriverFeed tests/DriverFeedTool.cpp)
