@@ -1,4 +1,5 @@
 aw_dependency(JUCE essej/JUCE 9bf1237797e600378dd6f969bd443ab1bf3f704f)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/JuceCompatibility.cmake)
 set(JUCE_BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
 set(JUCE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # JUCE 6 relied on a transitive <utility> include removed in recent standard libraries.

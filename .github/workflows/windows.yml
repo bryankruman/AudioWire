@@ -6,6 +6,7 @@ jobs:
   app:
     runs-on: windows-2022
     strategy:
+      fail-fast: false
       matrix:
         arch: [x64, ARM64]
     steps:
