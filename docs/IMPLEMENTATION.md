@@ -19,6 +19,9 @@ Phone mode, quality, volume and microphone privacy state establish the initial s
 
 ## Evidence from this workspace
 
+The [November 1 validation record](VALIDATION_STATUS.md) supersedes historical environment limitations below: a fresh dependency-download MSVC x64 app build, all four current test suites, Windows audio smoke check, workflow lint and developer-installer extraction now pass. Supported driver builds still fail with a missing WDK toolset, and iOS/driver/device release gates remain open.
+
+
 These checks have run locally on the Windows development host. The final packaged run is recorded in the ignored `build/` logs.
 
 | Check | Result and scope |
@@ -41,9 +44,9 @@ No driver was installed, no host boot policy was changed, no firewall rule or de
 
 ## Build limitations
 
-Xcode, the Apple SDK, an iPhone and an isolated driver-test VM are not available through this workspace. Visual Studio/WDK integration is not installed; the Microsoft WDK NuGet assets were unpacked only under ignored build directories for the LLVM check. The iOS source and MSVC/ARM64 app configuration still need their target-platform builds.
+Xcode, the Apple SDK, an iPhone and an isolated driver-test VM are not available through this workspace. Visual Studio C++ is installed; the kernel-driver WDK toolset/integration is missing; the Microsoft WDK NuGet assets were unpacked only under ignored build directories for the LLVM check. The iOS source and ARM64 app configuration still need their target-platform builds. The MSVC x64 app build has now passed; see VALIDATION_STATUS.md.
 
-The CI files are defined locally; they have not been run on GitHub. The extracted corresponding-source archive was rebuilt offline and its core/ABI tests passed. A fresh dependency-download app build and a clean-machine native build have not been verified. App builds used the pinned source checkouts through `AUDIOWIRE_VENDOR_DIR`.
+The CI files are defined locally; they have not been run on GitHub. The extracted corresponding-source archive was rebuilt offline and its core/ABI tests passed. A fresh dependency-download MSVC x64 app build has now passed. The original builds used pinned checkouts through `AUDIOWIRE_VENDOR_DIR`; the latest validation did not. A separate clean-machine build remains open.
 
 GCC 16 reports warnings inside the pinned JUCE empty-string reference-count code. The source retains an explicit empty-string deletion guard. The tests pass; these warnings and current MSVC/Xcode compatibility remain part of platform validation.
 

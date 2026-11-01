@@ -4,11 +4,11 @@ AudioWire accepts one PC and one phone per active connection. There are no accou
 
 ## Pairing
 
-A PC explicitly opens a two-minute pairing window with a cryptographically random six-digit code. The code is displayed only in the local UI and its QR. It is not put in advertisements, diagnostic text, or network messages.
+PC startup or an explicit local pairing action opens a two-minute pairing window with a cryptographically random six-digit code. The code is displayed only in the local UI and its QR. It is not put in advertisements, diagnostic text, or network messages.
 
 Pairing uses a balanced SPAKE2-style exchange on libsodium's Ristretto255 prime-order group. Role-specific mask points are independent hash-to-group outputs from fixed protocol labels. The password scalar binds the code and both device identities. The derived pair key binds identities, both messages, and the shared secret. HMAC-SHA256 confirmation has distinct PC and phone labels.
 
-Each online pairing exchange consumes one of five attempts, including an exchange that a client abandons after receiving the PC's confirmation. Only explicit user action opens a new window. Both parties verify confirmation before storing the key; the phone waits for the PC's final acknowledgement.
+Each online pairing exchange consumes one of five attempts, including an exchange that a client abandons after receiving the PC's confirmation. A new window requires local user action or an app restart. Replacing the code invalidates in-flight exchanges from the previous window before key persistence. Both parties verify confirmation before storing the key; the phone waits for the PC's final acknowledgement.
 
 **This is an application-specific PAKE implementation, not a claim of standards conformance or an audited SPAKE2 library. Independent protocol review and test vectors are release gates.** The primitive operations are from libsodium; protocol composition still needs review.
 
@@ -37,3 +37,7 @@ Driver security guidance: [Microsoft's device security model](https://learn.micr
 ## Diagnostics and reporting
 
 Diagnostics contain state, audio status, route, counts, selected quality and control-channel round-trip time. No audio recordings, keys or pairing codes are included. Error messages from malformed incoming handshakes are not logged. Report security issues privately to the repository owner rather than including credentials or recordings in public issues.
+
+## Independent review preparation
+
+[Review packet](security/PAIRING_REVIEW.md) specifies the candidate construction, public synthetic vectors, threat model and unanswered review questions. These materials prepare a review; they are not an independent cryptographic approval.

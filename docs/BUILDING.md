@@ -30,6 +30,8 @@ A local build was also exercised with portable w64devkit GCC 16.2.0, using the M
 
 ## iOS
 
+On a compatible Mac, `bash scripts/build-ios.sh` builds the unsigned simulator. `bash scripts/build-ios.sh device <APPLE_DEVELOPMENT_TEAM_ID>` builds with already provisioned local signing; it does not upload or install the app. The script fails without prompting to install Xcode when a full iOS SDK is missing.
+
 Use the simulator commands in the README. The native shim is compiled as Objective-C++ with ARC; JUCE's own Objective-C sources use the framework's build flags. Device builds need an Apple development team, certificate and profile. Do not put signing material into source control.
 
 The app requests local-network permission when discovery starts. Microphone permission is requested when microphone mode is enabled. The iOS plist declares the Bonjour service, background audio, microphone usage text and `audiowire://` URLs.
@@ -53,3 +55,7 @@ Core tests run on Windows, Linux and macOS. Windows app builds target x64 and AR
 CMake copies dependency licences into `<build>/licenses`. Keep that directory, `LICENSE`, `LICENSE_EXCEPTION` and `THIRD_PARTY_NOTICES.md` with redistributed binaries. `python scripts/bundle-source.py --vendor <actual-vendor-checkout-directory>` creates `build/package/AudioWire-0.1.0-source.zip` (a CMake `_deps` directory is accepted too), including the exact patched dependency sources used for offline builds. Without `--vendor`, the archive includes project sources and the pinned download/build definitions only. Supply complete corresponding source with any GPL binary distribution.
 
 [Implementation status](IMPLEMENTATION.md) identifies the actual local checks and remaining release gates. [Store release preparation](STORE_RELEASE.md) covers signing, licensing, privacy declarations and submission material.
+
+## Current validation and release evidence
+
+See [current results](VALIDATION_STATUS.md), [device and driver acceptance](DEVICE_VALIDATION.md), [release checklist](RELEASE_CHECKLIST.md), and [pairing review](security/PAIRING_REVIEW.md). Local workflow lint used checksum-verified actionlint 1.7.12 with the custom WDK label in `.github/actionlint.yaml`; actual hosted CI is a separate gate.

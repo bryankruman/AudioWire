@@ -66,6 +66,8 @@ The custom pairing protocol needs independent cryptographic review before public
 
 ## Documentation
 
+[Current validation results](docs/VALIDATION_STATUS.md), [release checklist](docs/RELEASE_CHECKLIST.md), [device/VM acceptance](docs/DEVICE_VALIDATION.md), and [pairing review packet](docs/security/PAIRING_REVIEW.md) distinguish local passes from open platform/release gates.
+
 [Implementation status](docs/IMPLEMENTATION.md) records what is implemented, what has been verified, deviations from the original plan, and release gates.
 [Troubleshooting](docs/TROUBLESHOOTING.md), [security design](docs/SECURITY.md), [store release preparation](docs/STORE_RELEASE.md), and [contributing](CONTRIBUTING.md) explain operation and development.
 
