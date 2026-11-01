@@ -72,7 +72,8 @@ if(AUDIOWIRE_BUILD_TESTS AND WIN32)
     add_test(NAME app_network COMMAND AudioWire --network-test)
 endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Licenses.cmake)
-install(TARGETS AudioWire RUNTIME DESTINATION . BUNDLE DESTINATION . RESOURCE DESTINATION resources)
+# Xcode compiles asset catalogs into the app bundle; CMake RESOURCE installation rejects directories.
+install(TARGETS AudioWire RUNTIME DESTINATION . BUNDLE DESTINATION .)
 
 if(WIN32)
     add_executable(AudioWireDriverFeed tests/DriverFeedTool.cpp)
