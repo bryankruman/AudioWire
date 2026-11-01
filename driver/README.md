@@ -1,6 +1,6 @@
 # AudioWire Windows driver candidate
 
-**Status: x64/ARM64 LLVM compile/link and Microsoft catalog checks passed; supported MSVC/WDK builds and VM/device behavior remain unverified. Do not install this candidate on the development host.**
+**Status: clean native MSVC/WDK Release builds, INF verification and Microsoft catalog checks pass for x64 and ARM64. Packages remain unsigned; VM/device behavior is unverified. Do not install this candidate on the development host.**
 
 The source is based on VirtualDrivers/Virtual-Audio-Driver at `bb34fba15faf569a6ae9bdea360bc1cf4821354e`, itself derived from Microsoft's SysVAD sample. Copyright and MS-PL/MIT notices are retained in `vendor/`.
 
@@ -16,14 +16,16 @@ The tone generator and render-to-disk recording have been removed. Speaker data 
 
 ## Build
 
-Install VS 2022 C++, matching Windows SDK/WDK 10.0.26100, WDK Visual Studio integration, and the required libraries including `portcls.lib`. From a developer PowerShell:
+Install a matching Visual Studio C++/SDK/WDK combination, WDK Visual Studio integration, target compiler tools and Spectre libraries, including `portcls.lib`. The November 1, 2026 clean builds used Visual Studio 2026 Build Tools (18.x), MSVC 19.50.35729 (toolset 14.50.35717) and SDK/WDK 10.0.28000.0 (WDK assembly 10.0.28000.2526). From PowerShell:
 
 ```powershell
 ./scripts/build-driver.ps1 -Architecture x64
 ./scripts/build-driver.ps1 -Architecture ARM64
 ```
 
-The project outputs under `build/driver/<architecture>/Release` and leaves signing off. A build result is a candidate, not an attestation-signed end-user package.
+The script finds an installed Visual Studio instance with the requested WDK toolset, selects 64-bit MSBuild, and chooses the latest installed matching kernel headers/PortCls libraries. Use `-KitVersion 10.0.28000.0` to select a kit explicitly. An EWDK or other configured environment can supply `-MSBuildPath <absolute-64-bit-MSBuild.exe>` and `-KitVersion <installed-kit-version>`. The script does not install developer tools.
+
+The project outputs under `build/driver/<architecture>/Release`; its `audiowire/` subdirectory contains the SYS/INF/CAT package. Signing stays off. `InfTimeStamp` defaults to driver version `0.1.0.0`; StampInf uses the build date, so package hashes identify the exact generated files rather than promising identical bytes across dates. The native Inf2Cat target checks the explicit architecture-specific VB/CO/NI/GE Windows target list. A build result is a candidate, not an attestation-signed end-user package.
 
 ## VM-only development installation
 

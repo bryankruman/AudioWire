@@ -10,6 +10,7 @@
     <ProjectGuid>{8A509E6C-42E1-4B19-9ECB-74B163143151}</ProjectGuid>
     <ProjectName>audiowire</ProjectName><RootNamespace>AudioWire</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <InfTimeStamp Condition="'$(InfTimeStamp)'==''">0.1.0.0</InfTimeStamp>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -25,8 +26,8 @@
     <IntDir>$(ProjectDir)..\build\driver\obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>audiowire</TargetName><EnableInf2cat>true</EnableInf2cat>
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
-    <Inf2CatOS Condition="'$(Platform)'=='x64'">10_VB_X64,10_CO_X64,10_NI_X64,10_GE_X64</Inf2CatOS>
-    <Inf2CatOS Condition="'$(Platform)'=='ARM64'">10_VB_ARM64,10_CO_ARM64,10_NI_ARM64,10_GE_ARM64</Inf2CatOS>
+    <Inf2CatWindowsVersionList Condition="'$(Platform)'=='x64'">10_VB_X64,10_CO_X64,10_NI_X64,10_GE_X64</Inf2CatWindowsVersionList>
+    <Inf2CatWindowsVersionList Condition="'$(Platform)'=='ARM64'">10_VB_ARM64,10_CO_ARM64,10_NI_ARM64,10_GE_ARM64</Inf2CatWindowsVersionList>
     <SignMode>Off</SignMode>
   </PropertyGroup>
   <ItemDefinitionGroup>

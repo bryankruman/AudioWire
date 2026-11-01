@@ -38,7 +38,7 @@ The app requests local-network permission when discovery starts. Microphone perm
 
 ## Driver and installer
 
-See `driver/README.md`. The app build does not compile or validate the kernel driver. `scripts/package.ps1` runs Inno Setup. Default packages omit the driver; `-WithDriver` includes an explicitly provided candidate. `-Release` additionally requires the driver and verifies the app and kernel signatures before packaging. Signing the completed installer remains a separate release operation.
+See `driver/README.md`. Native x64 and ARM64 Release builds passed with VS 2026 Build Tools, MSVC 19.50.35729 and SDK/WDK 10.0.28000.0. The driver script discovers matching installed tools, uses 64-bit MSBuild for WDK INF verification, and accepts explicit `-MSBuildPath` / `-KitVersion` overrides. The app build does not compile or validate the kernel driver. `scripts/package.ps1` runs Inno Setup. Default packages omit the driver; `-WithDriver` includes an explicitly provided candidate. `-Release` additionally requires the driver and verifies the app and kernel signatures before packaging. Signing the completed installer remains a separate release operation.
 
 No build or test script enables Windows Test Mode, installs a driver, changes the default sound devices, contacts a store, or publishes a release. Installer execution is the explicit system-changing step.
 

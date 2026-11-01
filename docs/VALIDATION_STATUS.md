@@ -1,6 +1,6 @@
 # AudioWire validation status — November 1, 2026
 
-Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 and local Ubuntu WSL portable-core validation pass. Hosted Windows x64/ARM64 builds, the iOS simulator build, and three-platform core CI now pass. iPhone acceptance, supported driver builds/runtime, ARM64 hardware acceptance and signed distribution remain open.
+Overall status: **partial**. Source preservation and pairing-review preparation are complete locally. Native Windows x64 and local Ubuntu WSL portable-core validation pass. Hosted Windows x64/ARM64 builds, the iOS simulator build, and three-platform core CI now pass. Clean native x64/ARM64 driver builds and INF/catalog checks also pass. iPhone acceptance, driver runtime, ARM64 hardware acceptance and signed distribution remain open.
 
 ## Hosted CI after branch publication
 
@@ -16,7 +16,7 @@ The first macOS jobs were cancelled by GitHub's scheduled macOS 14 image brownou
 
 The pinned Windows ARM64 port reports unavailable CPU clock metadata as unknown and disables x86 capability probing on ARM. The macOS snapshot fallback is used only by the headless host build helper; AudioWire does not ship a macOS GUI application. Audio transport and pairing protocol code were not changed by these compatibility fixes.
 
-The M1 MacBook Air has been selected for physical iOS development. Connection setup and protected local Apple provisioning are pending; the inventoried 2014 Mac mini was freshly checked as macOS 12.7.6 with no Xcode. A local Windows SDK/WDK installation plan and Microsoft-signed installers are staged for review. No developer-tool installation, SSH access change, host driver load or VM provisioning has occurred yet.
+The M1 MacBook Air has been selected for physical iOS development. Connection work is held at the user's request; protected local Apple provisioning is pending; the inventoried 2014 Mac mini was freshly checked as macOS 12.7.6 with no Xcode. The explicitly approved Windows developer-tool installation completed successfully: VS WDK/ARM64/Spectre components, SDK and WDK installers each exited 0 without requesting a reboot. No SSH access change, host driver load or VM provisioning occurred.
 
 Latest hosted artifact digests and the simulator inspection are retained under ignored `build/validation/hosted-ci-evidence.json` and `hosted-ios-artifact.json`. Earlier local package/archive hashes below identify historical development artifacts, not replacements for the latest hosted binaries.
 
@@ -42,9 +42,25 @@ Evidence is under ignored `build/validation/` in the task worktree. Logs are loc
 | Developer installer | Inno Setup compiled an unsigned, driver-free package. Extraction matched the app/helper hashes and included 22 dependency-notice files plus project licence documents. The installer was not run. | `installer-build.log`, `installer-extract.log`, `installer/` |
 | Script syntax | PowerShell build scripts parsed; `bash -n scripts/build-ios.sh` and Python source parsing passed. No Mac build was implied. | Source scripts and local parse commands |
 | Initial GitHub inspection | Before publication the public repository had no workflow runs and **0** registered self-hosted runners. Hosted CI results now appear above; no WDK runner was provisioned. | Current-session `gh repo view`, `gh run list`, `gh api .../actions/runners` |
+| Local driver tools | Approved VS component modification, SDK and WDK installation all exited 0; x64/ARM64 toolsets and PortCls libraries present. | `wdk-install/install-result.json`, `wdk-install/approved-install.log` |
+| Native driver builds | Clean x64 and ARM64 Release builds with VS 2026/MSVC 19.50.35729 and SDK/WDK 10.0.28000.0: **zero warnings/errors**. | `wdk-native-x64.log`, `wdk-native-arm64.log` |
+| Native driver metadata | Standalone InfVerif accepted each INF; native Inf2Cat checked all explicit VB/CO/NI/GE architecture targets without errors/warnings; expected PE machine types confirmed; SYS/CAT remain unsigned. | `wdk-infverif-*.log`, `wdk-native-results.json` |
 | Mac inspection | The documented Mac mini responded over its pinned LAN SSH identity: macOS **12.7.6**, no selected Xcode/developer directory. No Xcode or SDK was installed by this workstream. | Read-only SSH `hostname`, `sw_vers`, `xcode-select -p`, `xcodebuild -version` |
 
 The initial local development artifacts described below were **unsigned**; the latest CI builds also disable signing. The app SHA-256 is `7D683D5DE10775E981EFEDF9318DF1CE9DDF68ADA3ED18C8F69134EF6D61F174`. The development installer SHA-256 is `FB2689031FD629252C3844BC0359DDE76EFB1F17CECEFF246F4D45FA03718EDB`. `build/validation/artifacts.json` records final package/source hashes when bundled. These hashes identify development artifacts, not an approved release.
+
+## Supported native driver results
+
+On November 1, 2026 at 6:10 PM ET, both clean Release builds passed using 64-bit MSBuild from VS 2026 Build Tools, MSVC 19.50.35729 (toolset 14.50.35717), SDK/WDK 10.0.28000.0 and WDK assembly 10.0.28000.2526. Standalone InfVerif passed, and native Inf2Cat accepted the explicit VB/CO/NI/GE target lists for each architecture. These are build/package checks, not a kernel runtime or Microsoft signing result.
+
+| Unsigned driver | PE machine | SYS SHA-256 |
+|---|---|---|
+| x64 | `0x8664` | `04BB13F63510DBA010320F2EBCFCA8ECA6A3A0D348663EC62FDFACB0BB1ED8E4` |
+| ARM64 | `0xAA64` | `7FDA3D6F9BF01FF4A25A683FDFFDAC4D15CE9CAACC8DAD091BB106CFC3D051A1` |
+
+All SYS/INF/CAT hashes are recorded in `build/validation/wdk-native-results.json`; the source files are fingerprinted in `wdk-native-source.json`. Packages are under `build/driver/<architecture>/Release/audiowire/`. The kit stamps the current build date into each INF; these hashes identify this build, not a claim of byte-for-byte reproducibility on another date.
+
+The supported build exposed and resolved three project/tool-selection issues: empty INF version metadata caused StampInf error 87; 32-bit MSBuild could not load the new kit's x64 INF verifier DLL; and the unused `Inf2CatOS` property silently selected default targets instead of the intended Windows list. The project now supplies driver version `0.1.0.0`, the helper discovers installed WDK integration and selects 64-bit MSBuild/matching kit libraries, and `Inf2CatWindowsVersionList` carries the intended target list. An unused DRM-rights parameter is explicitly marked unused; no driver audio behavior changed.
 
 ## Failures reproduced and fixed
 
@@ -62,23 +78,22 @@ An exchange now records its originating code-window generation. A changed or exp
 
 | Gate | Current limitation | What would settle it |
 |---|---|---|
-| iOS simulator/device | No usable Xcode host or test iPhone designated; inventoried Mac mini lacks Xcode. | Run the prepared iOS build script on a compatible Mac, provision a real iPhone, and execute the device checklist. |
-| Windows ARM64 app/core | Hosted app/core cross-compilation now passes. Local target tools are still absent, and no ARM64 hardware runtime check ran. | Install the reviewed local target tools if needed; execute runtime checks on ARM64 hardware. |
-| Supported x64 and ARM64 driver builds | Both MSBuild attempts failed before compilation with **MSB8020**, missing `WindowsKernelModeDriver10.0`. | Matching supported Visual Studio/SDK/WDK integration and libraries, followed by successful builds. |
+| iOS device | Hosted simulator build passed. MacBook Air connection work is held; test iPhone setup and physical execution remain pending. | Resume the designated Mac setup when requested, provision a real iPhone, and execute the device checklist. |
+| Windows ARM64 app/core | Hosted app/core cross-compilation now passes. Local target tools are now installed; no local ARM64 app build or ARM64 hardware runtime check is claimed. | Execute runtime checks on ARM64 hardware. |
 | Driver VM and 24-hour Verifier | No dedicated, snapshotted driver-test VM designated; no self-hosted WDK runner registered. | Identify/provision the VM and supported build host; execute and retain all driver acceptance evidence. |
 | Hosted CI | All six jobs pass at `a38b556`; simulator artifact inspection also passes. | Rerun for a future release source revision; physical-device, kernel and signed-distribution gates remain separate. |
 | Physical audio and UX | No PC/iPhone call, echo/one-way acoustic latency/Wi-Fi recovery, screen reader or large-text result. | Complete DEVICE_VALIDATION.md on actual target hardware. |
 | Independent security review | Review packet and public fixtures prepared; no external reviewer engaged or approval obtained. | Reviewer independently reproduces vectors, resolves findings and signs off on the exact release revision. |
 | Distribution | No Microsoft-approved driver signatures, signed installer lifecycle proof, App Store approval or resolved JUCE/App Store disposition. | Complete RELEASE_CHECKLIST.md and STORE_RELEASE.md. |
 
-Driver failure output (both architectures):
+Historical driver failure, now resolved by the approved matching tool installation (both architectures):
 
 ```text
 error MSB8020: The build tools for WindowsKernelModeDriver10.0
 (Platform Toolset = 'WindowsKernelModeDriver10.0') cannot be found.
 ```
 
-Compiler success, localhost tests and unsigned catalog generation do not establish kernel safety or a working physical speakerphone. No driver was installed, no host boot policy/firewall/default audio device was changed, and no public source or store submission was published by these checks.
+Compiler success, localhost tests and unsigned catalog generation do not establish kernel safety or a working physical speakerphone. No driver was installed, no host boot policy/firewall/default audio device was changed, and no release or store submission was published by these checks. The source branch is already public as recorded above.
 
 The remaining execution procedures and release evidence requirements are in [device validation](DEVICE_VALIDATION.md), [pairing review](security/PAIRING_REVIEW.md) and [release checklist](RELEASE_CHECKLIST.md).
 

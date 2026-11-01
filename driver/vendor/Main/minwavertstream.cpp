@@ -1353,6 +1353,7 @@ Return Value:
     PAGED_CODE();
 
     DPF_ENTER(("[CMiniportWaveRT::SetContentId]"));
+    UNREFERENCED_PARAMETER(drmRights);
 
     NTSTATUS    ntStatus;
     ULONG       ulOldContentId = contentId;

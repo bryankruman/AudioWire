@@ -19,7 +19,7 @@ Phone mode, quality, volume and microphone privacy state establish the initial s
 
 ## Evidence from this workspace
 
-The [November 1 validation record](VALIDATION_STATUS.md) supersedes historical environment limitations below: a fresh dependency-download MSVC x64 app build, all four current test suites, Windows audio smoke check, workflow lint and developer-installer extraction now pass. Supported driver builds still fail with a missing WDK toolset, and iOS/driver/device release gates remain open.
+The [November 1 validation record](VALIDATION_STATUS.md) supersedes historical environment limitations below: a fresh dependency-download MSVC x64 app build, all four current test suites, Windows audio smoke check, workflow lint and developer-installer extraction now pass. Clean native x64/ARM64 MSVC/WDK Release builds and INF/catalog checks also pass after the approved local tool installation. iPhone, kernel runtime and distribution release gates remain open.
 
 
 These checks have run locally on the Windows development host. The final packaged run is recorded in the ignored `build/` logs.
@@ -32,7 +32,8 @@ These checks have run locally on the Windows development host. The final package
 | Driver ABI CTest | Request structure sizes and buffered-I/O layout; all 65,536 PCM16-to-float conversions match exactly |
 | Windows audio smoke check | Existing WASAPI loopback opens and 10 ms callbacks run; microphone injection disabled |
 | UI rendering | Windows connection/settings/diagnostics and a narrow phone layout rendered in light/dark themes and inspected |
-| x64/ARM64 driver compile/link | LLVM `clang-cl` and `lld-link` against Microsoft WDK 10.0.26100.1 headers/libraries; unsigned binaries produced |
+| Native x64/ARM64 driver builds | Clean VS 2026 Build Tools/MSVC 19.50.35729, SDK/WDK 10.0.28000.0 Release builds: zero warnings/errors; INF verification and explicit Windows target catalog checks pass; unsigned packages |
+| Earlier x64/ARM64 driver compile/link | LLVM `clang-cl` and `lld-link` against Microsoft WDK 10.0.26100.1 headers/libraries; unsigned binaries produced |
 | Driver metadata/catalog | Microsoft `Inf2Cat` accepts both candidates for the selected Windows 10/11 targets without errors or warnings and generates unsigned catalogs |
 | Installer | Inno Setup development installer compiled; extracted app/helper hashes match; 25 dependency notices; default package excludes the kernel driver; installer not executed |
 | FetchContent build path | Configuration and full app/tests pass without `AUDIOWIRE_VENDOR_DIR`, using CMake source overrides; lowercase dependency lookup verified |
@@ -44,7 +45,7 @@ No driver was installed, no host boot policy was changed, no firewall rule or de
 
 ## Build limitations
 
-Xcode, the Apple SDK, an iPhone and an isolated driver-test VM are not available through this workspace. Visual Studio C++ is installed; the kernel-driver WDK toolset/integration is missing; the Microsoft WDK NuGet assets were unpacked only under ignored build directories for the LLVM check. Hosted CI now builds both Windows architectures and the iOS simulator. Signed physical-iPhone builds, ARM64 hardware execution and kernel validation remain open; see VALIDATION_STATUS.md.
+Xcode, the Apple SDK, an iPhone and an isolated driver-test VM are not available through this workspace. The approved local installation now supplies Visual Studio C++, x64/ARM64 target tools, Spectre libraries and matching SDK/WDK integration. Clean native driver builds and metadata checks pass; the earlier LLVM evidence is retained as historical validation. Hosted CI now builds both Windows architectures and the iOS simulator. Signed physical-iPhone builds, ARM64 hardware execution and kernel validation remain open; see VALIDATION_STATUS.md.
 
 The CI files have now run on GitHub: all six core/application/simulator jobs pass at `a38b556`; see VALIDATION_STATUS.md. The extracted corresponding-source archive was rebuilt offline and its core/ABI tests passed. A fresh dependency-download MSVC x64 app build has now passed. The original builds used pinned checkouts through `AUDIOWIRE_VENDOR_DIR`; the latest validation did not. A separate clean-machine build remains open.
 
@@ -69,7 +70,7 @@ Default-device restoration journals prior role selections before switching. Norm
 | Gate | Evidence still required |
 |---|---|
 | Apple build and device validation | Current Xcode simulator/device builds; provisioned iPhone; real Bonjour/manual/QR pairing; permission denial/recovery; route changes, Bluetooth, background/lock, interruptions and low-power behavior |
-| Windows kernel validation | Supported MSVC/WDK x64/ARM64 builds; VM installation with protected test-signing material; shared/exclusive advertised formats; malformed requests, exclusive ownership, underrun/overflow, close/crash cleanup; 24-hour Driver Verifier; sleep/resume, RDP, HVCI and physical ARM64 loading |
+| Windows kernel validation | Native MSVC/WDK x64/ARM64 builds and INF/catalog checks now pass. Remaining: VM installation with protected test-signing material; shared/exclusive advertised formats; malformed requests, exclusive ownership, underrun/overflow, close/crash cleanup; 24-hour Driver Verifier; sleep/resume, RDP, HVCI and physical ARM64 loading |
 | Real call/audio acceptance | Teams/Zoom/Discord/OBS/Audacity; both directions together; echo at arm's length; measured one-way acoustic latency at or below 60 ms; 30-second Wi-Fi loss/recovery within the product's five-second target; extended clock-drift tests |
 | Security and accessibility | Independent PAKE/protocol review and vectors; packet/parser fuzzing; no-secret diagnostics review; VoiceOver/Narrator and Dynamic Type XXL; nontechnical first-run setup timing |
 | Distribution | Resolve JUCE/App Store licensing; protected organisation signing identities and Apple/Microsoft accounts; Microsoft-approved kernel signatures; signed app/installer; VM install/uninstall; privacy manifest and policy/declarations; real review/demo material; TestFlight/App Store and Windows release publication |
